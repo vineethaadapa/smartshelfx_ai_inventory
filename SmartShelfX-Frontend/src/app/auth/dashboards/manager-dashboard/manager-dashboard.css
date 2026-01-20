@@ -1,0 +1,476 @@
+/* =========================================
+   1. GLOBAL LAYOUT (Admin-style)
+   ========================================= */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.admin-wrapper, .dashboard-wrapper {
+    display: flex;
+    flex-direction: row;
+    width: 100vw;       /* Forces the width to exactly the screen width */
+    height: 100vh;      /* Forces the height to exactly the screen height */
+    overflow: hidden;    /* ELIMINATES THE BOTTOM SCROLLBAR */
+    background-color: #f1f5f9;
+}
+
+/* =========================================
+   2. SIDEBAR (LOCKED POSITION)
+   ========================================= */
+.sidebar {
+    width: 260px;
+    min-width: 260px;    /* Prevents sidebar from squishing at any size */
+    flex-shrink: 0;      /* Critical for Flexbox stability */
+    background-color: #0f172a;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    z-index: 10;
+}
+
+/* =========================================
+   3. MAIN CONTENT (ONLY AREA THAT SCROLLS)
+   ========================================= */
+.main-content {
+    flex: 1;             /* Tells the content to take up ALL remaining space */
+    min-width: 0;        /* CRITICAL: Allows the container to shrink smaller 
+                            than the table inside it, enabling table scroll */
+    height: 100vh;
+    padding: 40px;
+    overflow-y: auto;    /* Vertical scroll only */
+    overflow-x: hidden;  /* Blocks the entire page from sliding sideways */
+    display: flex;
+    flex-direction: column;
+    background-color: #f8fafb;
+}
+
+/* =========================================
+   4. TABLE & ELEMENT OVERFLOW FIXES
+   ========================================= */
+.table-container {
+    width: 100%;
+    max-width: 100%;     /* Keeps the white box inside the screen */
+    background: white;
+    border-radius: 12px;
+    overflow-x: auto;    /* ALLOWS ONLY THE TABLE TO SLIDE if columns are too wide */
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.modern-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;    /* Forces internal scroll within .table-container 
+                            instead of pushing the whole screen out */
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 40px;
+    color: #38bdf8; /* Admin Blue */
+}
+
+nav button {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+    font-weight: 500;
+}
+
+nav button .icon { margin-right: 12px; }
+
+nav button:hover, nav button.active {
+    background-color: #1e293b;
+    color: white;
+}
+
+.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: auto;
+}
+
+/* =========================================
+   3. MAIN CONTENT
+   ========================================= */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.user-pill {
+    background: white;
+    padding: 8px 16px;
+    border-radius: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.role-badge.MANAGER {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* =========================================
+   4. TABLES & CONTAINERS
+   ========================================= */
+.report-container {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.modern-table { width: 100%; border-collapse: collapse; }
+.modern-table th { background: #f8fafc; padding: 16px; text-align: left; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+.modern-table td { padding: 16px; border-top: 1px solid #f1f5f9; vertical-align: middle; }
+
+/* Filter Inputs */
+.toolbar { display: flex; justify-content: space-between; margin-bottom: 24px; }
+.filter-group { display: flex; gap: 12px; }
+.filter-group input, .filter-group select, .role-select {
+    padding: 10px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    outline: none;
+    background: white;
+}
+
+/* Badges */
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.bg-danger { background: #fee2e2; color: #b91c1c; }
+.bg-success { background: #dcfce7; color: #15803d; }
+.bg-info { background: #e0f2fe; color: #075985; }
+
+.cat-tag { background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; color: #475569; }
+
+/* Buttons */
+.primary-btn {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* =========================================
+   5. AUDIT LOGS (Admin Timeline Style)
+   ========================================= */
+.audit-card {
+    background: white;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid #cbd5e1;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.log-type[data-type="IN"] { color: #10b981; }
+.log-type[data-type="OUT"] { color: #ef4444; }
+.log-time { float: right; color: #94a3b8; font-size: 0.85rem; }
+/* Container for the user profile section */
+
+/* Container for user identity only */
+.header-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+/* Unique class name for the MANAGER role to avoid breaking other badges */
+.identity-role-badge {
+  background-color: #2563eb; 
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.email-text {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.wh-id-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #fef3c7; 
+  color: #92400e; 
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid #fcd34d;
+}
+
+
+/* Container Card */
+.ai-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.ai-card h3 {
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+thead tr {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+th {
+  text-align: left;
+  padding: 14px;
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.025em;
+}
+
+td {
+  padding: 16px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+
+
+/* Prediction Units Column */
+td:nth-child(2) {
+  font-weight: 600;
+  color: #2563eb; /* Professional Blue */
+}
+
+/* Reorder Button Style */
+.btn-reorder {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); /* Energetic Amber */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+}
+
+.btn-reorder:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+}
+
+.btn-reorder:active {
+  transform: translateY(0);
+}
+
+/* Empty State / Loading */
+td[colspan="3"] {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Simple entry animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* Recommendation Pill Colors */
+.pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.pill-optimal { background: #dcfce7; color: #15803d; }
+.pill-warning { background: #fee2e2; color: #b91c1c; }
+
+.status-pill {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pill.critical {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #f87171;
+}
+
+.status-pill.warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fbbf24;
+}
+
+.status-pill.success {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #4ade80;
+}
+
+/* Notification Styles */
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+.notif-panel {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  border: 1px solid #e2e8f0;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.notif-header {
+  padding: 12px 15px;
+  font-weight: bold;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+.notif-items-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notif-card {
+  display: flex;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+  gap: 10px;
+}
+
+.notif-card.unread { background-color: #f0f9ff; }
+
+.notif-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.notif-indicator.HIGH { background-color: #ef4444; }
+.notif-indicator.MEDIUM { background-color: #f59e0b; }
+.notif-indicator.LOW { background-color: #3b82f6; }
+
+.notif-content p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #1e293b;
+}
+
+.notif-content small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.dismiss-notif {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.dismiss-notif:hover { color: #ef4444; }
+
+.notif-empty {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}

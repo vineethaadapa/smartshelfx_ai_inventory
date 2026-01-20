@@ -1,0 +1,154 @@
+:root {
+  --primary-color: #213171; /* SmartShelfX Green */
+  --secondary-color: #007bff; /* Accent Blue */
+  --background-color: #f8f9fa; /* Light Grey background */
+  --text-color: #343a40; /* Dark Text */
+  --error-color: #dc3545; /* Red */
+  --border-color: #e9ecef;
+  --card-bg: #ffffff;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* --- Auth Card Container --- */
+.auth-card {
+  width: 100%;
+  max-width: 450px;
+  padding: 40px;
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  border-top: 6px solid var(--primary-color);
+  transition: transform 0.3s ease-in-out;
+}
+
+.auth-card h2 {
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2em;
+  font-weight: 700;
+}
+
+/* --- Form Elements --- */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.95em;
+  color: var(--text-color);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+  outline: none;
+}
+
+/* Validation Styling */
+.form-group input.ng-invalid.ng-touched {
+  border-color: var(--error-color);
+}
+
+.error-message {
+  color: var(--error-color);
+  font-size: 0.8em;
+  margin-top: 5px;
+  font-weight: 500;
+  padding-left: 5px;
+}
+
+/* --- Buttons --- */
+button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: 600;
+  transition: background-color 0.3s, opacity 0.3s;
+}
+
+button[type="submit"]:hover:not([disabled]) {
+  background-color: #1e7e34;
+}
+
+button[type="submit"]:disabled {
+  background-color: var(--primary-color);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Switch Link (Bottom text) */
+.switch-link {
+  margin-top: 25px;
+  font-size: 0.95em;
+  text-align: center;
+}
+
+.switch-link a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* --- Welcome Page Specific Layout --- */
+.welcome-action-buttons {
+    display: flex;
+    gap: 15px; /* Space between buttons */
+    margin-top: 35px;
+}
+
+.welcome-action-buttons button {
+    width: 50%;
+    padding: 12px;
+    font-size: 1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #1e7e34;
+}
+
+.btn-secondary {
+    background-color: #6c757d; /* Muted secondary color */
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}

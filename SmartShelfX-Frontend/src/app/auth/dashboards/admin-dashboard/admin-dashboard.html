@@ -1,0 +1,523 @@
+  <div class="admin-wrapper">
+    <aside class="sidebar">
+      <div class="brand">SmartShelfX 📦</div>
+      <nav>
+        <button [class.active]="activeTab === 'inventory'" (click)="switchTab('inventory')">
+          <span class="icon">📋</span> Inventory
+        </button>
+        <button [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
+          <span class="icon">📜</span> Audit Logs
+        </button>
+        <button [class.active]="activeTab === 'reports'" (click)="switchTab('reports')">
+          <span class="icon">📊</span> Reports
+        </button>
+        <button [class.active]="activeTab === 'permissions'" (click)="onOpenPermissions()">
+          <span class="icon">🔐</span> Permissions
+        </button>
+        <button [class.active]="activeTab === 'ai-forecast'" (click)="switchTab('ai-forecast')">
+          <span class="icon">🤖</span> AI Prediction
+        </button> 
+        <button [class.active]="activeTab === 'alerts'" (click)="switchTab('alerts'); loadAdminAlerts()">
+          <span class="icon">🔔</span> View Alerts
+        </button>
+        <button [class.active]="activeTab === 'vendor-performance'" (click)="switchTab('vendor-performance'); loadPerformanceData()">
+          <span class="icon">📊</span> Vendor Performance
+        </button>
+      </nav>
+      <button class="logout-btn" (click)="onLogout()">Logout</button>
+    </aside>
+
+    <main class="main-content">
+      <header class="content-header">
+    <div class="header-title">
+      <h2>{{ activeTab | titlecase }} Control Center</h2>
+      <p class="subtitle">Manage system assets and track movements</p>
+    </div>
+    
+    <div class="header-right-side" style="display: flex; align-items: center; gap: 20px;">
+      
+      <div class="notification-wrapper" style="position: relative;">
+        <button class="bell-trigger" (click)="toggleDropdown()" style="background: none; border: none; font-size: 20px; cursor: pointer; position: relative;">
+          🔔
+          <span *ngIf="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
+        </button>
+
+        <div class="notif-panel" *ngIf="isNotificationOpen">
+          <div class="notif-header">System Notifications</div>
+          <div class="notif-items-list">
+            <div *ngFor="let alert of alerts" class="notif-card" [class.unread]="!alert.isRead">
+              <div class="notif-indicator" [class]="alert.priority"></div>
+              <div class="notif-content">
+                <p>{{ alert.message }}</p>
+                <small>{{ alert.createdAt | date:'shortTime' }} • {{ alert.type }}</small>
+              </div>
+              <button class="dismiss-notif" (click)="markAsRead(alert.id)">×</button>
+            </div>
+            <div *ngIf="alerts.length === 0" class="notif-empty">No unread alerts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="user-pill">
+        <span class="role-badge">{{ userRole }}</span>
+        <strong>{{ userEmail }}</strong>
+        <!-- <span *ngIf="loggedUserWarehouseId" class="wh-badge">WH: {{ loggedUserWarehouseId }}</span> -->
+      </div>
+    </div>
+  </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Items</span>
+            <span class="stat-value">{{ totalItems }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card" [class.low-stock-warning]="lowStockCount > 0">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-info">
+            <span class="stat-label">Low Stock Alerts</span>
+            <span class="stat-value">{{ lowStockCount }}</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">💵</div>
+          <div class="stat-info">
+            <span class="stat-label">Total Value</span>
+            <span class="stat-value">{{ totalInventoryValue | currency:'INR' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'inventory'" class="tab-content">
+        <div class="toolbar">
+          <div class="filter-group">
+            <input type="text" [(ngModel)]="searchTerm" (input)="applyFilters()" placeholder="Search SKU or Name...">
+            <select [(ngModel)]="filterCategory" (change)="applyFilters()">
+              <option value="">All Categories</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+            <select [(ngModel)]="filterVendorId" (change)="applyFilters()">
+              <option value="">All Vendors</option>
+              <option *ngFor="let v of vendors" [value]="v.id">{{ v.name }}</option>
+            </select>
+            <select [(ngModel)]="filterStockStatus" (change)="applyFilters()">
+              <option value="">All Stock Levels</option>
+              <option value="INSTOCK">In Stock (Normal)</option>
+              <option value="LOW">Low Stock</option>
+              <option value="OUT">Out of Stock</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <input type="file" #fileInput (change)="onImportCSV($event)" hidden accept=".csv">
+            <button class="secondary-btn" (click)="fileInput.click()">📥 Import CSV</button>
+            <button class="export-btn" (click)="exportToCSV()">📤 Export CSV</button>
+            <button class="add-btn" (click)="openAddModal()">+ Add Product</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Vendor</th>
+                <th>Stock Level</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of filteredProducts">
+                <td><code>{{ p.sku }}</code></td>
+                <td>{{ p.name }}</td>
+                <td><span class="cat-tag">{{ p.category }}</span></td>
+                <td><span class="vendor-tag">{{ p.vendor?.name || 'N/A' }}</span></td>
+                <td [class.low-stock-text]="p.currentStock <= p.reorderLevel">
+                  {{ p.currentStock }}
+                </td>
+  <td class="px-6 py-4">
+    <span [style.backgroundColor]="(+p.currentStock) === 0 ? '#FEE2E2' : ((+p.currentStock) <= (+p.reorderLevel) ? '#FFEDD5' : '#DCFCE7')"
+        [style.color]="(+p.currentStock) === 0 ? '#B91C1C' : ((+p.currentStock) <= (+p.reorderLevel) ? '#C2410C' : '#15803D')"
+        style="padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 12px; border: 1px solid currentColor;">
+      {{ (+p.currentStock) === 0 ? 'OUT OF STOCK' : ((+p.currentStock) <= (+p.reorderLevel) ? 'LOW STOCK' : 'IN STOCK') }}
+  </span>
+  </td>
+                <td>
+                  <div class="action-buttons">
+                    <button class="edit-btn" (click)="openEditModal(p)" title="Edit">✏️</button>
+                    <button class="del-btn" (click)="onDeleteProduct(p.id)" title="Delete">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <div *ngIf="activeTab === 'vendor-performance'" class="performance-section">
+      <div class="performance-container" style="margin-bottom: 20px;">
+        <h3>Fulfillment Trend</h3>
+        <div class="chart-container" style="position: relative; height:250px; width:100%;">
+          <canvas id="perfChart"></canvas>
+        </div>
+      </div>
+
+      <div class="performance-container">
+        <div class="header-section">
+          <h2>Vendor Performance Scorecard</h2>
+          <button class="refresh-btn" (click)="loadPerformanceData()">
+            <span class="icon">🔄</span> Refresh Stats
+          </button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Total Requests</th>
+                <th>Fulfillment Rate</th>
+                <!-- <th>Avg Response Time</th> -->
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let v of vendorStats()">
+                <td class="vendor-name">{{ v.vendorName }}</td>
+                <td>{{ v.totalRequests }}</td>
+                <td>
+                  <div class="rate-container">
+                    <span class="rate-text">{{ v.fulfillmentRate | number:'1.0-0' }}%</span>
+                    <div class="mini-progress">
+                      <div class="fill" [style.width.%]="v.fulfillmentRate" 
+                          [ngClass]="{'high': v.fulfillmentRate >= 80, 'low': v.fulfillmentRate < 50}"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="rating-badge" [ngClass]="{
+                    'bg-excellent': v.fulfillmentRate >= 80,
+                    'bg-average': v.fulfillmentRate < 80 && v.fulfillmentRate >= 50,
+                    'bg-poor': v.fulfillmentRate < 50
+                  }">
+                    {{ v.fulfillmentRate >= 80 ? 'Excellent' : (v.fulfillmentRate >= 50 ? 'Average' : 'Poor') }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+      <div *ngIf="activeTab === 'audit'" class="tab-content">
+        <div class="audit-timeline">
+          <div class="audit-card" *ngFor="let log of auditLogs">
+            <div class="log-header">
+              <span class="log-type" [attr.data-type]="log.type">{{ log.type }}</span>
+              <span class="log-time">{{ log.timestamp | date:'medium' }}</span>
+            </div>
+            <div class="log-body">
+              <p>Product <strong>{{ log.product?.name }}</strong> was updated by <strong>{{ log.handledBy?.email }}</strong></p>
+              <div class="log-meta">
+                <span>Qty: {{ log.quantity }}</span> | <span>Reason: {{ log.reason }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<div *ngIf="activeTab === 'reports'" class="tab-content">
+  <div class="report-toolbar" style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+    <button class="export-btn" (click)="exportReport()" style="background-color: #e11d48; color: white; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer;">
+      <span class="icon">📑</span> Download PDF Report
+    </button>
+  </div>
+
+  <div class="report-grid-layout">
+    
+    <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 20px;">
+      <div class="report-container fixed-height-card">
+        <div class="report-header"><h3>📋 Actionable Restock Report</h3></div>
+        <div class="table-container" style="max-height: 300px; overflow-y: auto;">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Product Details</th>
+                <th>Stock Level</th>
+                <th>Threshold</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container *ngFor="let p of products">
+                <tr *ngIf="p.currentStock <= p.reorderLevel">
+                  <td><strong>{{ p.name }}</strong><br><small>{{ p.sku }}</small></td>
+                  <td class="low-stock-text">{{ p.currentStock }}</td>
+                  <td>{{ p.reorderLevel }}</td>
+                  <td><span class="status-pill critical">CRITICAL</span></td>
+                </tr>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="report-container fixed-height-card">
+        <div class="report-header"><h3>📊 Stock Health Overview</h3></div>
+        <div class="chart-wrapper-reports" style="height: 300px; position: relative;">
+          <canvas #healthChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-container" style="margin-bottom: 20px;">
+      <div class="report-header"><h3>🔝 Top Restocked Items (By Volume)</h3></div>
+      <div class="table-container" style="max-height: 250px; overflow-y: auto;">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Product Name</th>
+              <th>Total Units Restocked</th>
+              <th>Last Restock Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of topRestockedItems">
+              <td><code>{{ item.sku }}</code></td>
+              <td><strong>{{ item.name }}</strong></td>
+              <td><span class="status-pill success" style="background: #DCFCE7; color: #15803D; font-weight: bold;">+ {{ item.totalQuantity }}</span></td>
+              <td><small>{{ item.lastRestock | date:'mediumDate' }}</small></td>
+            </tr>
+            <tr *ngIf="topRestockedItems.length === 0">
+              <td colspan="4" style="text-align: center; padding: 20px; color: #64748b;">No restock history available.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="report-container" style="margin-bottom: 20px;">
+      <div class="report-header"><h3>📈 Inventory Trends (Cumulative)</h3></div>
+      <div class="chart-wrapper-reports" style="height: 350px; position: relative; width: 100%;">
+        <canvas #trendCanvas></canvas>
+      </div>
+    </div>
+
+    <div class="report-container">
+      <div class="report-header"><h3>📊 Monthly Purchase vs. Sales Comparison</h3></div>
+      <div class="chart-wrapper-reports" style="height: 350px; position: relative; width: 100%;">
+        <canvas #comparisonCanvas></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+  <div *ngIf="activeTab === 'ai-forecast'" class="tab-content">
+    <div class="report-container" style="background: white; padding: 25px; border-radius: 12px; min-height: 600px;">
+      
+      <h2>🤖 AI Demand Forecasting</h2>
+      <p class="subtitle">Predictive analysis using Linear Regression</p>
+
+      <div *ngIf="forecastData?.stockout_risk" 
+          style="background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; margin: 20px 0; border: 1px solid #fecaca; font-weight: bold;">
+        ⚠️ High Risk: Predicted demand ({{forecastData?.forecast_total_7d}} units) exceeds current stock!
+      </div>
+
+      <div class="stats-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 30px;">
+        <div class="stat-card">
+    <div class="stat-icon">📊</div>
+    <div>
+      <span class="stat-label">Predicted 7D Total</span>
+      <div class="stat-value">{{ selectedForecastTotal || 0 }}</div>
+    </div>
+  </div>
+
+        <div class="stat-card" style="height: 350px; display: flex; flex-direction: column;">
+          <span class="stat-label">7-Day Demand Forecast Trend</span>
+          <div style="flex: 1; position: relative; width: 100%;">
+            <canvas id="forecastChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+  <div class="table-container">
+      <h3>📋 Multi-Item AI Demand Planning   <h6>(Click on the product to get demand prediction for it)</h6></h3>
+      
+      <table class="modern-table">
+          <thead>
+              <tr>
+                  <th>PRODUCT SKU</th>
+                  <th>NAME</th>
+                  <th>CURRENT STOCK</th>
+                  <th>7-DAY PREDICTED DEMAND</th>
+                  <th>AI RECOMMENDATION</th>
+                  <!-- <th>ACTION</th> -->
+              </tr>
+          </thead>
+          <tbody>
+              <tr *ngFor="let item of multiForecastData" 
+                  (click)="updateActiveChart(item)" 
+                  style="cursor: pointer; transition: background 0.2s; border-bottom: 1px solid #eee;">
+                  
+                  <td><strong>{{ item.sku }}</strong></td>
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.current_stock }} units</td>
+                  <td style="color: #4f46e5; font-weight: bold;">{{ item.forecast }} units</td>
+                  
+                  <td>
+                      <span [class]="item.action === 'Restock Immediately' ? 'status-pill critical' : 'status-pill success'">
+                          {{ item.action }}
+                      </span>
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+  </div>
+
+
+          <ng-template #loading>
+            <div class="text-center p-10">
+              <p>Connecting to AI Engine...</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'alerts'" class="tab-content">
+  <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h3>Notification History</h3>
+    <button class="secondary-btn" (click)="loadAdminAlerts()">🔄 Refresh History</button>
+  </div>
+
+  <div class="table-container">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Priority</th>
+          <th>Type</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let alert of adminAlerts" [class.row-read]="alert.isRead">
+          <td>{{ alert.createdAt | date:'short' }}</td>
+          <td>
+            <span class="priority-badge" [class]="alert.priority">
+              {{ alert.priority }}
+            </span>
+          </td>
+          <td>{{ alert.type }}</td>
+          <td>{{ alert.message }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+      <div *ngIf="activeTab === 'permissions'" class="tab-content">
+        <div class="report-container">
+          <div class="report-header">
+            <h3>🔐 User Access Control</h3>
+          </div>
+          <div class="table-container">
+            <table class="modern-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email Address</th>
+                  <th>Role</th>
+                  <th>Warehouse</th> 
+                  <th>Actions</th> 
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of allUsers">
+                  <td><strong>{{ u.name }}</strong></td>
+                  <td>{{ u.email }}</td>
+                  <td><span class="role-badge" [ngClass]="u.role">{{ u.role }}</span></td>
+                  <td>
+                    <span class="wh-pill" [class.assigned]="u.warehouseId">
+                      {{ u.warehouseId ? 'WH ' + u.warehouseId : 'Unassigned' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="perm-actions">
+                      <select (change)="onChangeRole(u.id, $event)" class="role-select">
+                        <option value="MANAGER" [selected]="u.role === 'MANAGER'">Manager</option>
+                        <option value="VENDOR" [selected]="u.role === 'VENDOR'">Vendor</option>
+                        <option value="ADMIN" [selected]="u.role === 'ADMIN'">Admin</option>
+                      </select>
+                      <button *ngIf="u.role === 'MANAGER'" (click)="onAssignWarehouse(u.id)" class="secondary-btn btn-sm">
+                        📍 Assign WH
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+
+  <div class="modal-overlay" *ngIf="showProductModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ isEditMode ? 'Edit Product Details' : 'Add New Product to Catalog' }}</h3>
+        <button class="close-x" (click)="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Product Name</label>
+            <input type="text" [(ngModel)]="productForm.name" placeholder="e.g. Laptop Pro">
+          </div>
+          <div class="form-group">
+            <label>SKU Code</label>
+            <input type="text" [(ngModel)]="productForm.sku" [disabled]="isEditMode" placeholder="e.g. LP-001">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Category</label>
+            <select [(ngModel)]="productForm.category">
+              <option value="" disabled>Select Category</option>
+              <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Preferred Vendor</label>
+            <select [(ngModel)]="productForm.vendor.id">
+              <option value="null">None</option>
+              <option *ngFor="let v of vendors" [value]="v.id">{{ v.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Reorder Level (Safety Stock)</label>
+            <input type="number" [(ngModel)]="productForm.reorderLevel">
+          </div>
+          <div class="form-group">
+            <label>Unit Price (₹)</label>
+            <input type="number" [(ngModel)]="productForm.price">
+          </div>
+        </div>
+        <p class="form-hint">* Initial stock will be zero. Use the Restock module to add quantity.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" (click)="closeModal()">Cancel</button>
+        <button class="primary-btn" (click)="onSaveProduct()">{{ isEditMode ? 'Update' : 'Register' }}</button>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,332 @@
+<div class="admin-wrapper">
+  <aside class="sidebar">
+    <div class="brand">SmartShelfX 📦</div>
+    <nav>
+      <button [class.active]="activeTab === 'movement'" (click)="activeTab = 'movement'">
+        <span class="icon">🔄</span> Stock Movement
+      </button>
+      <button [class.active]="activeTab === 'inventory'" (click)="activeTab = 'inventory'">
+        <span class="icon">📋</span> Inventory Status
+      </button>
+      <button [class.active]="activeTab === 'reorders'" (click)="activeTab = 'reorders'">
+        <span class="icon">🚚</span> Vendor Orders
+      </button>
+      <button [class.active]="activeTab === 'csv'" (click)="activeTab = 'csv'">
+        <span class="icon">📂</span> Batch Upload
+      </button>
+      <button [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">
+        <span class="icon">📜</span> Activity History
+      </button>
+      <button [class.active]="activeTab === 'ai-demand'" (click)="setActiveTab('ai-demand')">
+        <span class="icon">🧠</span> AI Demand Forecast
+      </button>
+    </nav>
+    <button class="logout-btn" (click)="onLogout()">Logout</button>
+  </aside>
+
+  <main class="main-content">
+    <header class="content-header">
+      <div class="header-title">
+        <h2>
+          {{ activeTab === 'movement' ? 'Stock Movement' : 
+             activeTab === 'inventory' ? 'Inventory Status' : 
+             activeTab === 'reorders' ? 'Vendor Reorder Tracking' : 
+             activeTab === 'csv' ? 'Batch Stock Update' : 'Activity History' }}
+        </h2>
+        <p class="subtitle">System Manager Control Panel</p>
+      </div>
+     
+      <div class="header-right-side" style="display: flex; align-items: center; gap: 20px;">
+      
+      <div class="notification-wrapper" style="position: relative;">
+        <button class="bell-trigger" (click)="toggleDropdown()" style="background: none; border: none; font-size: 20px; cursor: pointer; position: relative;">
+          🔔
+          <span  *ngIf="unreadCount" class="notif-badge">{{unreadCount}}</span>
+        </button>
+
+        <div class="notif-panel" *ngIf="isNotificationOpen">
+          <div class="notif-header">System Notifications</div>
+          <div class="notif-items-list">
+            <div *ngFor="let alert of alerts" class="notif-card" [class.unread]="!alert.isRead">
+              <div class="notif-indicator" [class]="alert.priority"></div>
+              <div class="notif-content">
+                <p>{{ alert.message }}</p>
+                <small>{{ alert.createdAt | date:'shortTime' }} • {{ alert.type }}</small>
+              </div>
+              <button class="dismiss-notif" (click)="markAsRead(alert.id)">×</button>
+            </div>
+            <div *ngIf="alerts.length === 0" class="notif-empty">No unread alerts</div>
+          </div>
+        </div>
+      </div>
+       <div class="header-user-info">
+        <span class="identity-role-badge">{{ userRole }}</span>
+        <span class="email-text">{{ userEmail }}</span>
+        <div class="wh-id-tag" *ngIf="loggedUserWarehouseId">
+          <span class="icon">📍</span>
+          <span>WH: {{ loggedUserWarehouseId }}</span>
+        </div>
+      </div>
+    </div>
+    </header>
+
+    @if (activeTab === 'movement') {
+      <div class="tab-content">
+        <div class="report-container">
+          <div class="report-header">
+            <h3>📦 Manual Stock Adjustment</h3>
+          </div>
+          <div class="row g-4 align-items-end p-3">
+            <div class="col-md-3">
+              <label class="form-label fw-bold small text-muted">Choose Product</label>
+              <select class="role-select w-100" [(ngModel)]="selectedProductId">
+                <option [ngValue]="null" disabled>-- Select Item --</option>
+                @for (item of products(); track item.id) {
+                  <option [value]="item.product.id">{{ item.product.name }} (Current: {{ item.currentStock }})</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-bold small text-muted">Operation</label>
+              <select class="role-select w-100" [(ngModel)]="type">
+                <option value="IN">Stock IN</option>
+                <option value="OUT">Stock OUT</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label fw-bold small text-muted">Quantity</label>
+              <input type="number" class="role-select w-100" [(ngModel)]="qty">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-bold small text-muted">Reason/Notes</label>
+              <input type="text" class="role-select w-100" [(ngModel)]="reason" placeholder="e.g. Damage, Restock...">
+            </div>
+            <div class="col-md-2">
+              <button class="primary-btn w-100" (click)="submitUpdate()">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'ai-demand') {
+  <div class="ai-card">
+    <h3>Warehouse AI Replenishment Suggestions</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Predicted Needs (7 Days)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pred of predictions(); track $index) {
+          <tr>
+          <td><strong>{{ pred.productName }}</strong></td>
+          <td>{{ pred.predictedDemand | number:'1.0-0' }} Units</td>
+          <td>
+            <button (click)="openReorderModal(pred)" class="btn-reorder">
+              ⚡ Quick Reorder
+            </button>
+          </td>
+        </tr>
+        } @empty {
+          <tr><td colspan="3">Loading AI analysis...</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+    @if (activeTab === 'inventory') {
+      <div class="tab-content">
+        <div class="d-flex justify-content-between align-items-center">
+            <h3 class="m-0">Warehouse Inventory Health</h3>
+            <button class="btn-action-small" (click)="prepareChartData()">🔄 Refresh Chart</button>
+        </div>
+        <div style="height: 250px; width: 100%; margin-top: 15px;">
+            <canvas id="inventoryPieChart"></canvas>
+        </div>
+        <div class="toolbar">
+          <div class="filter-group">
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="Search Name or SKU...">
+            
+            <select [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)">
+              <option value="">All Categories</option>
+              @for (cat of categories(); track cat) { <option [value]="cat">{{ cat }}</option> }
+            </select>
+
+            <select [ngModel]="selectedStatus()" (ngModelChange)="selectedStatus.set($event)">
+              <option value="ALL">All Levels</option>
+              <option value="NORMAL">Healthy Stock</option>
+              <option value="LOW">Low Stock Alerts</option>
+              <option value="OUT">Out of Stock</option>
+            </select>
+          </div>
+        </div>
+
+<div class="table-container">
+  <table class="modern-table">
+    <thead>
+      <tr>
+        <th>Product Name</th>
+        <th>SKU</th> <th>Category</th>
+        <th>Current Stock</th>
+        <th>Status & Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of filteredProducts(); track item.id) {
+        <tr>
+          <td><strong>{{ item.product.name }}</strong></td>
+          <td><code class="text-muted">{{ item.product.sku }}</code></td> 
+          <td><span class="cat-tag">{{ item.product.category }}</span></td>
+          <td>{{ item.currentStock }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              @if (item.currentStock <= 0) {
+                <span class="badge bg-danger">OUT OF STOCK</span>
+              } @else if (item.currentStock <= item.reorderLevel) {
+                <span class="badge bg-warning text-dark">LOW STOCK</span>
+              } @else {
+                <span class="badge bg-success">HEALTHY</span>
+              }
+
+              @if (item.currentStock <= item.reorderLevel) {
+                <button class="btn-action-small" (click)="sendVendorReorderRequest(item)">
+                  🚚 Order
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+      @if (filteredProducts().length === 0) {
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">No products match your filters.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+      </div>
+    }
+    @if (activeTab === 'reorders') {
+  <div class="tab-content">
+    <div class="toolbar mb-3">
+      <div class="filter-group">
+        <label class="small fw-bold text-muted me-2">Filter Status:</label>
+        <select [ngModel]="selectedVendorStatus()" (ngModelChange)="selectedVendorStatus.set($event)">
+          <option value="ALL">All Orders</option>
+          <option value="PENDING">Awaiting Vendor</option>
+          <option value="APPROVED">Fulfilled</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Request Date & Time</th>
+            <th>Product</th>
+            <th>Qty Requested</th>
+            <th>Vendor Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of filteredReorderHistory(); track req.id) {
+            <tr>
+              <td>{{ req.requestDate | date:'medium' }}</td>
+              <td><strong>{{ req.product.name }}</strong></td>
+              <td>{{ req.requestedQuantity }}</td>
+              <td>
+                <span class="badge" 
+                  [ngClass]="{
+                    'bg-info': req.status === 'PENDING',
+                    'bg-success': req.status === 'APPROVED',
+                    'bg-danger': req.status === 'REJECTED'
+                  }">
+                  {{ req.status === 'PENDING' ? 'Awaiting Vendor' : req.status === 'APPROVED' ? 'Fulfilled' : 'Rejected' }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+    @if (activeTab === 'csv') {
+      <div class="tab-content">
+        <div class="report-container p-5 text-center">
+          <div class="mb-4">
+            <span class="icon" style="font-size: 3rem;">📂</span>
+            <h3>Batch Stock Update (CSV)</h3>
+            <p class="text-muted">Upload a CSV from the warehouse to update multiple levels at once.</p>
+            <span class="badge bg-light text-dark border">Format : SKU  , New Stock Level </span>
+          </div>
+          
+          <input type="file" #csvInput (change)="onFileSelected($event)" accept=".csv" style="display: none;">
+          <button class="primary-btn px-5" (click)="csvInput.click()">
+            Select CSV File
+          </button>
+          
+          @if (selectedFile) {
+            <div class="mt-3 text-primary fw-bold">Selected: {{ selectedFile.name }}</div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'history') {
+  <div class="tab-content">
+    <div class="toolbar mb-3">
+      <div class="filter-group">
+        <label class="small fw-bold text-muted me-2">Movement Type:</label>
+        <select [ngModel]="selectedTransactionType()" (ngModelChange)="selectedTransactionType.set($event)">
+          <option value="ALL">All History</option>
+          <option value="IN">Stock IN</option>
+          <option value="OUT">Stock OUT</option>
+          <option value="ADJUSTMENT">Manual Adjustments</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Full Timestamp</th>
+            <th>Product</th>
+            <th>Type</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of filteredTransactions(); track t.id) {
+            <tr>
+              <td>{{ t.timestamp | date:'medium' }}</td>
+              <td><strong>{{ t.product?.name }}</strong></td>
+              <td>
+                <span class="badge" [ngClass]="t.type === 'IN' ? 'bg-success' : 'bg-danger'">
+                  {{ t.type }}
+                </span>
+              </td>
+              <td>{{ t.quantity }}</td>
+              <td>{{ t.product?.price | currency:'INR' }}</td>
+              <td class="text-primary fw-bold">
+                {{ (t.product?.price * t.quantity) | currency:'INR' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+  </main>

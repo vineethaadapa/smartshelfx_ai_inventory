@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>Review Purchase Order</h2>
+<mat-dialog-content>
+  <div class="modal-container">
+    <p><strong>Product:</strong> {{data.productName}} ({{data.sku}})</p>
+    <p><strong>Vendor:</strong> {{data.vendorId}}</p>
+    
+    <mat-form-field appearance="outline" class="w-100 mt-3">
+      <mat-label>Quantity to Order</mat-label>
+      <input matInput 
+             type="number" 
+             min="1" 
+             [(ngModel)]="data.quantity" 
+             (input)="updateTotal()"
+             #qtyInput="ngModel">
+      
+      <mat-error *ngIf="data.quantity < 1">Quantity must be at least 1</mat-error>
+      
+      <h5><mat-hint><b>AI Suggested: {{data.aiSuggestedQty}}</b></mat-hint></h5>
+    </mat-form-field>
+
+    <div class="price-box mt-3">
+      <p>Unit Price: {{data.unitPrice | currency}}</p>
+      <h3 class="total">Total: {{totalAmount | currency}}</h3>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-raised-button 
+          color="primary" 
+          [mat-dialog-close]="data" 
+          [disabled]="data.quantity < 1">
+    Confirm & Send PO
+  </button>
+</mat-dialog-actions>
