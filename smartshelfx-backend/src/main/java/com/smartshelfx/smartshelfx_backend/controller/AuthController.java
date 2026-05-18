@@ -18,6 +18,12 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // A simple endpoint just to wake up the server container
+    @GetMapping("/ping")
+    public ResponseEntity<String> pingServer() {
+        return ResponseEntity.ok("Server is wide awake!");
+    }
+    
     // POST /api/auth/register
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
