@@ -178,4 +178,7 @@ def predict_for_manager(wh_id):
         return jsonify([])
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    # Read Render's dynamic port, default to 5000 for local testing
+    port = int(os.environ.get("PORT", 5000))
+    # Bind to 0.0.0.0 so it's accessible externally
+    app.run(host="0.0.0.0", port=port)
