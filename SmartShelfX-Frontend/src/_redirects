@@ -1,5 +1,0 @@
-# Forward all API requests to your real backend server
-/api/* https://smartshelfx-ai-inventory-ai-services.onrender.com  200
-
-# Angular fallback routing (Keep this at the bottom!)
-/* /index.html  200
