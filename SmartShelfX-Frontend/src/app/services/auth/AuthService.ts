@@ -11,7 +11,7 @@ interface AuthResponse { token: string; email: string; message: string; }
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api/auth'; 
+  private apiUrl = 'https://smartshelfx-backend.onrender.com/api/auth'; 
 
   constructor(private http: HttpClient) {}
 
