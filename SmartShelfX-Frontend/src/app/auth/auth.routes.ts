@@ -4,7 +4,7 @@ import { Routes } from '@angular/router';
 import { WelcomePageComponent } from './welcome-page/welcome-page';
 import { LoginComponent } from './login/login';
 import { RegisterComponent } from './register/register';
-import { DashboardComponent } from './dashboard/dashboard';
+// import { DashboardComponent } from './dashboard/dashboard';
 import { roleGuard } from './guards/role.guard';
 import { AdminDashboardComponent } from './dashboards/admin-dashboard/admin-dashboard';
 import { ManagerDashboardComponent } from './dashboards/manager-dashboard/manager-dashboard';
