@@ -179,21 +179,21 @@ loadAlerts() {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     
-    this.http.get<WarehouseStock[]>('http://localhost:8080/api/stock/inventory', { headers }).subscribe({
+    this.http.get<WarehouseStock[]>('https://smartshelfx-backend.onrender.com/api/stock/inventory', { headers }).subscribe({
       next: (data) => this.products.set(data),
       error: (err) => {
         if(err.status === 403) alert("Security Error: MANAGER role required.");
       }
     });
 
-    this.http.get<any[]>('http://localhost:8080/api/stock/transactions', { headers }).subscribe({
+    this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/stock/transactions', { headers }).subscribe({
       next: (data) => {
         const sorted = data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         this.transactions.set(sorted);
       }
     });
 
-    this.http.get<any[]>('http://localhost:8080/api/stock/reorder-history', { headers }).subscribe({
+    this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/stock/reorder-history', { headers }).subscribe({
       next: (data) => {
         const sorted = data.sort((a, b) => new Date(b.requestDate).getTime() - new Date(a.requestDate).getTime());
         this.reorderHistory.set(sorted);
@@ -217,7 +217,7 @@ loadAlerts() {
       reason: this.reason || "Manual Update"
     };
 
-    this.http.post('http://localhost:8080/api/stock/update', payload, { headers }).subscribe({
+    this.http.post('https://smartshelfx-backend.onrender.com/api/stock/update', payload, { headers }).subscribe({
       next: () => {
         alert('Stock Updated Successfully!');
         this.fetchData(); 
@@ -247,7 +247,7 @@ loadAlerts() {
       notes: `Purchase request sent to vendor for ${item.product.name}`
     };
 
-    this.http.post('http://localhost:8080/api/stock/reorder', payload, { headers }).subscribe({
+    this.http.post('https://smartshelfx-backend.onrender.com/api/stock/reorder', payload, { headers }).subscribe({
       next: () => {
         alert('Purchase order sent successfully!');
         this.fetchData();
@@ -270,7 +270,7 @@ loadAlerts() {
       const formData = new FormData();
       formData.append('file', file);
 
-      this.http.post('http://localhost:8080/api/stock/import-csv', formData, { headers }).subscribe({
+      this.http.post('https://smartshelfx-backend.onrender.com/api/stock/import-csv', formData, { headers }).subscribe({
         next: () => {
           alert('Batch Stock updated successfully!');
           this.selectedFile = null; 
@@ -302,7 +302,7 @@ fetchAiDemands() {
 
   const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
 
-  this.http.get<any[]>('http://localhost:8080/api/predictions/demand-data', { headers })
+  this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/predictions/demand-data', { headers })
     .subscribe({
       next: (data) => {
         console.log("Manager Data UI Update:", data);
@@ -332,7 +332,7 @@ quickReorder(pred: any) {
   };
 
   // We use the same endpoint as sendVendorReorderRequest to keep history consistent
-  this.http.post('http://localhost:8080/api/stock/reorder', payload, { headers })
+  this.http.post('https://smartshelfx-backend.onrender.com/api/stock/reorder', payload, { headers })
     .subscribe({
       next: () => {
         alert(`✅ Reorder request for ${pred.productName} submitted!`);
@@ -380,7 +380,7 @@ openReorderModal(pred: any) {
       console.log("Creating Stock Request for Warehouse:", stockRequestPayload.warehouseId);
 
       // Ensure this endpoint exists in your VendorController.java
-      this.http.post('http://localhost:8080/api/vendor/reorders', stockRequestPayload).subscribe({
+      this.http.post('https://smartshelfx-backend.onrender.com/api/vendor/reorders', stockRequestPayload).subscribe({
         next: (res) => {
           alert(`Success! Reorder request sent for Warehouse #${stockRequestPayload.warehouseId}`);
           this.fetchData(); // Refresh history

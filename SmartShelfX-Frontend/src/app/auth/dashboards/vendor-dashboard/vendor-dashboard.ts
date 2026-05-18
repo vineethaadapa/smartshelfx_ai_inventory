@@ -43,7 +43,7 @@ fetchPredictions() {
 
   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
-  this.http.get<any[]>('http://localhost:8080/api/predictions/demand-data', { headers })
+  this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/predictions/demand-data', { headers })
     .subscribe({
       next: (data) => {
         console.log('Success! Data from Spring Boot (via Flask):', data);
@@ -161,7 +161,7 @@ setActiveTab(tab: string) {
   fetchProducts() {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.get<any[]>('http://localhost:8080/api/vendor/my-products', { headers }).subscribe({
+    this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/vendor/my-products', { headers }).subscribe({
       next: (data) => this.products.set(data),
       error: (err) => console.error("Product fetch error", err)
     });
@@ -170,7 +170,7 @@ setActiveTab(tab: string) {
   fetchReorders() {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.get<any[]>('http://localhost:8080/api/vendor/reorders', { headers }).subscribe({
+    this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/vendor/reorders', { headers }).subscribe({
       next: (data) => this.reorderRequests.set(data),
       error: (err) => console.error("Error loading reorders", err)
     });
@@ -182,7 +182,7 @@ setActiveTab(tab: string) {
 
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.post(`http://localhost:8080/api/vendor/reorders/${requestId}/status`, { status: newStatus }, { headers })
+    this.http.post(`https://smartshelfx-backend.onrender.com/api/vendor/reorders/${requestId}/status`, { status: newStatus }, { headers })
       .subscribe({
         next: () => {
           alert(`Order successfully ${newStatus.toLowerCase()}!`);
@@ -201,7 +201,7 @@ setActiveTab(tab: string) {
     if (!p) return;
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.put(`http://localhost:8080/api/vendor/products/${p.id}`, p, { headers })
+    this.http.put(`https://smartshelfx-backend.onrender.com/api/vendor/products/${p.id}`, p, { headers })
       .subscribe({
         next: () => {
           this.fetchProducts();
@@ -221,7 +221,7 @@ setActiveTab(tab: string) {
     formData.append('file', this.selectedFile);
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    this.http.post('http://localhost:8080/api/vendor/products/upload-csv', formData, { headers, responseType: 'text' })
+    this.http.post('https://smartshelfx-backend.onrender.com/api/vendor/products/upload-csv', formData, { headers, responseType: 'text' })
       .subscribe({
         next: () => {
           alert("Catalog updated!");
@@ -234,7 +234,7 @@ setActiveTab(tab: string) {
 fetchSalesReport() {
   const token = localStorage.getItem('token');
   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-  this.http.get<any>('http://localhost:8080/api/vendor/sales-report', { headers }).subscribe({
+  this.http.get<any>('https://smartshelfx-backend.onrender.com/api/vendor/sales-report', { headers }).subscribe({
     next: (data) => {
       const sortedItems = (data.items || []).sort((a: any, b: any) => 
         new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime()

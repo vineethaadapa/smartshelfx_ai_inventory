@@ -23,7 +23,7 @@ export interface Alert {
 })
 export class AlertService {
   private http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost:8080/api/alerts';
+  private readonly API_URL = 'https://smartshelfx-backend.onrender.com/api/alerts';
   getAlertsForVendor(vendorId: number): Observable<Alert[]> {
     return this.http.get<Alert[]>(`${this.API_URL}/vendor/${vendorId}`);
   }

@@ -416,7 +416,7 @@ reorderFromVendor(item: any) {
       sku: item.sku,
       quantityToAdd: quantityToOrder
     };
-    this.http.post('http://localhost:8080/api/admin/products', updatePayload).subscribe({
+    this.http.post('https://smartshelfx-backend.onrender.com/api/admin/products', updatePayload).subscribe({
       next: (res) => {
         alert(`Purchase Order for ${item.sku} dispatched and stock updated!`);
         this.loadDashboardData(); 

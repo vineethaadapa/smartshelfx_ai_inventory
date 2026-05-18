@@ -13,7 +13,7 @@ export interface VendorPerformance {
 @Injectable({ providedIn: 'root' })
 export class VendorPerformanceService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/admin/vendor-performance';
+  private apiUrl = 'https://smartshelfx-backend.onrender.com/api/admin/vendor-performance';
 
   getPerformanceReport(): Observable<VendorPerformance[]> {
     const token = localStorage.getItem('token');

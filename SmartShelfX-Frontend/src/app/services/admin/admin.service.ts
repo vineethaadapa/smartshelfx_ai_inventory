@@ -14,7 +14,7 @@ export interface MonthlyComparison {
 })
 export class AdminService {
   
-  private apiUrl = 'http://localhost:8080/api/admin';
+  private apiUrl = 'https://smartshelfx-backend.onrender.com/api/admin';
 
   constructor(private http: HttpClient) {}
 
@@ -74,7 +74,7 @@ export class AdminService {
     
     const token = localStorage.getItem('token');
     
-    return this.http.post('http://localhost:8080/api/stock/import-csv', formData, {
+    return this.http.post('https://smartshelfx-backend.onrender.com/api/stock/import-csv', formData, {
       headers: { 
         'Authorization': `Bearer ${token}`
         // Note: Do NOT add 'Content-Type'. The browser handles it for FormData automatically.
@@ -125,7 +125,7 @@ assignWarehouse(userId: number, warehouseId: number): Observable<any> {
 getOverallHealth(): Observable<any> {
   const token = localStorage.getItem('token');
   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-  return this.http.get<any>(`http://localhost:8080/api/admin/overall-health`, { headers });
+  return this.http.get<any>(`https://smartshelfx-backend.onrender.com/api/admin/overall-health`, { headers });
 }
 
 // Add this to your AdminService class
@@ -138,7 +138,7 @@ getProductForecast(payload: { product_name: string, current_stock: number }): Ob
 }
 
 getDemandPredictions(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:8080/api/predictions/demand-data');
+    return this.http.get<any[]>('https://smartshelfx-backend.onrender.com/api/predictions/demand-data');
 }
 
 downloadInventoryPdf() {

@@ -7,9 +7,9 @@ import { Observable } from 'rxjs';
 })
 export class PurchaseOrderService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8080/api/orders';
+  private apiUrl = 'https://smartshelfx-backend.onrender.com/api/orders';
 sendPO(orderData: any): Observable<any> {
-  return this.http.post('http://localhost:8080/api/orders/generate', orderData);
+  return this.http.post('https://smartshelfx-backend.onrender.com/api/orders/generate', orderData);
 }
   submitPurchaseOrder(orderData: any): Observable<any> {
     return this.sendPO(orderData);
